@@ -1,7 +1,7 @@
 import harfang as hg
 from math import pi
 
-def draw_name_tag(vtx, vtx_4, robot_position, shader, shader_1, vid_scene_opaque, text, font, font_prg, text_uniform_values, text_render_state, cam_world):
+def DrawNameTag(vtx, vtx_4, robot_position, shader, shader_1, vid_scene_opaque, text, font, font_prg, text_uniform_values, text_render_state, cam_world):
 	front = hg.GetZ(cam_world)
 	right = hg.GetX(cam_world)
 	up = hg.GetY(cam_world)

@@ -11,7 +11,7 @@ sock.bind(("", UDP_PORT))
 
 clients = {}
 
-def handleSnd():
+def HandleSend():
     global clients
     while True:
         try:
@@ -27,7 +27,7 @@ def handleSnd():
         except Exception as err:
             print(err)
 
-def handleRcv():
+def HandleReceive():
     global clients, old_clients, pos_x, pos_y
     while True:
         data, addr = sock.recvfrom(1024)
@@ -38,9 +38,9 @@ def handleRcv():
                     if decoded_data[6] > clients[addr][5]:
                         clients[addr] = [decoded_data[1], decoded_data[2], decoded_data[3], decoded_data[4], decoded_data[5], decoded_data[6]]
                     else:
-                        print("---paquet client refuse---\n")
-                        print("Id paquet recu : " + str(decoded_data[3]))
-                        print("Id client actuel : " + str(clients[addr][3]))
+                        print("---client packet rejected---\n")
+                        print("reveived packet ID : " + str(decoded_data[3]))
+                        print("current packet ID : " + str(clients[addr][3]))
                 else:
                     clients[addr] = [decoded_data[1], decoded_data[2], decoded_data[3], decoded_data[4], decoded_data[5], decoded_data[6]]
 
@@ -48,5 +48,5 @@ def handleRcv():
         except Exception as err:
             print(err)
 
-threading.Thread(target=handleRcv).start()
-threading.Thread(target=handleSnd).start()
+threading.Thread(target=HandleReceive()).start()
+threading.Thread(target=HandleSend()).start()

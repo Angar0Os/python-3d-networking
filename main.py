@@ -5,7 +5,7 @@ import pickle
 import time
 from utils import RangeAdjust
 from statistics import median_low, median_high
-from name_tag import draw_name_tag
+from name_tag import DrawNameTag
 
 # Init socket and server-linked variables
 UDP_IP = "192.168.0.195"
@@ -27,7 +27,7 @@ global_last_packet = 0
 time_deltas = [0.1]
 send_id = 0
 
-def handleSnd():
+def HandleSend():
 	global MESSAGE, send_id
 	while True:
 		data = pickle.dumps(MESSAGE)
@@ -35,7 +35,7 @@ def handleSnd():
 		send_id += 1
 		time.sleep(0.0333)
 
-def handleRcv():
+def HandleReceive():
 	global players, old_players, global_time_end, next_players, global_last_packet, time_deltas
 	while True:
 		try:
@@ -70,8 +70,8 @@ def handleRcv():
 		except Exception as err:
 			print(err)
 
-threading.Thread(target=handleSnd).start()
-threading.Thread(target=handleRcv).start()
+threading.Thread(target=HandleSend).start()
+threading.Thread(target=HandleReceive).start()
 
 # Init Harfang
 hg.InputInit()
@@ -197,7 +197,7 @@ while not hg.ReadKeyboard().Key(hg.K_Escape) and hg.IsWindowOpen(win):
 						wanted_rot = hg.Lerp(player_old_rot, player_updated_rot, adjusted_time)
 
 				new_lerped_players.append([wanted_pos.x, wanted_pos.z, wanted_rot.x, wanted_rot.y, wanted_rot.z])
-				draw_name_tag(vtx_2, vtx_4, wanted_pos, line_shader, name_shader, vid_scene_opaque, "Remote " + str(pinstance[1] + 1), font, font_prg, text_uniform_values, text_render_state, cam.GetTransform().GetWorld())
+				DrawNameTag(vtx_2, vtx_4, wanted_pos, line_shader, name_shader, vid_scene_opaque, "Remote " + str(pinstance[1] + 1), font, font_prg, text_uniform_values, text_render_state, cam.GetTransform().GetWorld())
 				if show_lerp:
 					player_transform.SetPos(wanted_pos)
 					player_transform.SetRot(wanted_rot)
@@ -249,7 +249,7 @@ while not hg.ReadKeyboard().Key(hg.K_Escape) and hg.IsWindowOpen(win):
 
 	vid_scene_opaque = hg.GetSceneForwardPipelinePassViewId(pass_ids, hg.SFPP_Opaque)
 
-	draw_name_tag(vtx_2, vtx_4, pos, line_shader, name_shader, vid_scene_opaque, "Local", font, font_prg, text_uniform_values, text_render_state, cam.GetTransform().GetWorld())
+	DrawNameTag(vtx_2, vtx_4, pos, line_shader, name_shader, vid_scene_opaque, "Local", font, font_prg, text_uniform_values, text_render_state, cam.GetTransform().GetWorld())
 
 	hg.ImGuiBeginFrame(res_x, res_y, dt, mouse.GetState(), keyboard.GetState())
 
