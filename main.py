@@ -4,7 +4,6 @@ import threading
 import pickle
 import time
 from utils import RangeAdjust
-from statistics import median_low, median_high
 from name_tag import DrawNameTag
 
 # Init socket and server-linked variables
@@ -15,7 +14,7 @@ UDP_PORT = 5005
 sock = socket.socket(socket.AF_INET,
 					 socket.SOCK_DGRAM)
 
-MESSAGE = [0, 0, 0, 0, 0, 0, 0] # MESSAGE CODE, POS_X, POS_Z, ROT_X_Y_Z, SEND_ID
+MESSAGE = [0, 0, 0, 0, 0, 0, 0]
 players = []
 lerped_players = players
 old_players = players
