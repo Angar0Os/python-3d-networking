@@ -8,8 +8,8 @@ from statistics import median_low, median_high
 from name_tag import DrawNameTag
 
 # Init socket and server-linked variables
-UDP_IP = "192.168.0.195"
-# UDP_IP = "127.0.0.1"
+# UDP_IP = "192.168.0.195"
+UDP_IP = "127.0.0.1"
 UDP_PORT = 5005
 
 sock = socket.socket(socket.AF_INET,
@@ -31,45 +31,41 @@ def HandleSend():
 	global MESSAGE, send_id
 	while True:
 		data = pickle.dumps(MESSAGE)
-		sock.sendto(data, (UDP_IP, UDP_PORT))
+		ret = sock.sendto(data, (UDP_IP, UDP_PORT))
 		send_id += 1
 		time.sleep(0.0333)
 
 def HandleReceive():
 	global players, old_players, global_time_end, next_players, global_last_packet, time_deltas
 	while True:
-		try:
-			data, addr = sock.recvfrom(1024)
-			decoded_data = pickle.loads(data)
-			if decoded_data[0] == 1:
-				if time.time() < global_time_end and global_time_end != 0:
-					next_players = decoded_data[1]
-					next_players.append(time.time())
-					if global_last_packet == 0:
-						global_last_packet = time.time()
-					else:
-						time_deltas.insert(0, time.time() - global_last_packet)
-						global_last_packet = time.time()
-						if len(time_deltas) > 20:
-							time_deltas.pop()
+		data, addr = sock.recvfrom(1024)
+		decoded_data = pickle.loads(data)
+		if decoded_data[0] == 1:
+			if time.time() < global_time_end and global_time_end != 0:
+				next_players = decoded_data[1]
+				next_players.append(time.time())
+				if global_last_packet == 0:
+					global_last_packet = time.time()
 				else:
-					if len(players) == len(lerped_players):
-						old_players = lerped_players.copy()
-					else: 
-						old_players = players.copy()
-					players = decoded_data[1]
-					players.append(time.time())
-					if global_last_packet == 0:
-						global_last_packet = time.time()
-					else:
-						time_deltas.insert(0, time.time() - global_last_packet)
-						global_last_packet = time.time()
-						if len(time_deltas) > 20:
-							time_deltas.pop()
-
-		except Exception as err:
-			print(err)
-
+					time_deltas.insert(0, time.time() - global_last_packet)
+					global_last_packet = time.time()
+					if len(time_deltas) > 20:
+						time_deltas.pop()
+			else:
+				if len(players) == len(lerped_players):
+					old_players = lerped_players.copy()
+				else: 
+					old_players = players.copy()
+				players = decoded_data[1]
+				players.append(time.time())
+				if global_last_packet == 0:
+					global_last_packet = time.time()
+				else:
+					time_deltas.insert(0, time.time() - global_last_packet)
+					global_last_packet = time.time()
+					if len(time_deltas) > 20:
+						time_deltas.pop()
+						
 threading.Thread(target=HandleSend).start()
 threading.Thread(target=HandleReceive).start()
 
