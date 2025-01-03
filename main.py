@@ -14,7 +14,8 @@ UDP_PORT = 5005
 sock = socket.socket(socket.AF_INET,
 					 socket.SOCK_DGRAM)
 
-MESSAGE = [0, 0, 0, 0, 0, 0, 0, 0]
+send_id = 0
+MESSAGE = [0, 0, 0, 0, 0, 0, 0, 0, time.time()]
 players = []
 lerped_players = players
 old_players = players
@@ -24,14 +25,13 @@ players_instances = []
 global_time_end = 0
 global_last_packet = 0
 time_deltas = [0.1]
-send_id = 0
 
 def HandleSend():
 	global MESSAGE, send_id
 	while True:
 		sock.sendto(pickle.dumps(MESSAGE), (UDP_IP, UDP_PORT))
 		send_id += 1
-		time.sleep(0.0333)
+		time.sleep(1/60)
 
 def HandleReceive():
 	global players, old_players, global_time_end, next_players, global_last_packet, time_deltas
@@ -52,7 +52,7 @@ def HandleReceive():
 			else:
 				if len(players) == len(lerped_players):
 					old_players = lerped_players.copy()
-				else: 
+				else:
 					old_players = players.copy()
 				players = decoded_data[1]
 				players.append(time.time())
@@ -63,7 +63,7 @@ def HandleReceive():
 					global_last_packet = time.time()
 					if len(time_deltas) > 20:
 						time_deltas.pop()
-						
+
 threading.Thread(target=HandleSend).start()
 threading.Thread(target=HandleReceive).start()
 
@@ -122,10 +122,6 @@ while not hg.ReadKeyboard().Key(hg.K_Escape) and hg.IsWindowOpen(win):
 	keyboard.Update()
 	mouse.Update()
 	dt = hg.TickClock()
-
-	# _r = cam_rot.GetTransform().GetRot()
-	# _r.y = _r.y + hg.time_to_sec_f(dt)
-	# cam_rot.GetTransform().SetRot(_r)
 
 	min_node_pos = scene.GetNode('area_min').GetTransform().GetPos()
 	max_node_pos = scene.GetNode('area_max').GetTransform().GetPos()
@@ -224,7 +220,7 @@ while not hg.ReadKeyboard().Key(hg.K_Escape) and hg.IsWindowOpen(win):
 	pos = trs.GetPos()
 	rot = trs.GetRot()
 
-	MESSAGE = [0, pos.x, pos.y, pos.z, rot.x, rot.y, rot.z, send_id]
+	MESSAGE = [0, pos.x, pos.y, pos.z, rot.x, rot.y, rot.z, send_id, time.time()]
 	world = hg.RotationMat3(rot.x, rot.y, rot.z)
 	front = hg.GetZ(world)
 
