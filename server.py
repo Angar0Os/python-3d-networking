@@ -85,9 +85,11 @@ receive_thread.start()
 
 
 print("Server running...")
+
 try:
     while running:
         time.sleep(1/60)
+        print(f'\r Clients conneted on server: {len(clients)}' , end='', flush=True)
 except KeyboardInterrupt:
     running = False
     send_thread.join()
