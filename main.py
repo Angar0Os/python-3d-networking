@@ -14,7 +14,7 @@ UDP_PORT = 5005
 sock = socket.socket(socket.AF_INET,
 					 socket.SOCK_DGRAM)
 
-MESSAGE = [0, 0, 0, 0, 0, 0, 0]
+MESSAGE = [0, 0, 0, 0, 0, 0, 0, 0]
 players = []
 lerped_players = players
 old_players = players
@@ -29,8 +29,7 @@ send_id = 0
 def HandleSend():
 	global MESSAGE, send_id
 	while True:
-		data = pickle.dumps(MESSAGE)
-		ret = sock.sendto(data, (UDP_IP, UDP_PORT))
+		sock.sendto(pickle.dumps(MESSAGE), (UDP_IP, UDP_PORT))
 		send_id += 1
 		time.sleep(0.0333)
 
@@ -136,9 +135,9 @@ while not hg.ReadKeyboard().Key(hg.K_Escape) and hg.IsWindowOpen(win):
 	max_z = max_node_pos.z
 
 	if len(players) - 1 > players_spawned:
-		player_node, _  = hg.CreateInstanceFromAssets(scene, hg.TransformationMat4(hg.Vec3(players[players_spawned][0], 0, players[players_spawned][1]), hg.Vec3(players[players_spawned][2], players[players_spawned][3], players[players_spawned][4])), "objects_library/players/yellow_robot.scn", res, hg.GetForwardPipelineInfo())
-		player_lerp_node, _  = hg.CreateInstanceFromAssets(scene, hg.TransformationMat4(hg.Vec3(players[players_spawned][0], 0, players[players_spawned][1]), hg.Vec3(players[players_spawned][2], players[players_spawned][3], players[players_spawned][4])), "objects_library/players/ghost_uninterpolated_robot.scn", res, hg.GetForwardPipelineInfo())
-		player_pred_node, _  = hg.CreateInstanceFromAssets(scene, hg.TransformationMat4(hg.Vec3(players[players_spawned][0], 0, players[players_spawned][1]), hg.Vec3(players[players_spawned][2], players[players_spawned][3], players[players_spawned][4])), "objects_library/players/ghost_predict_robot.scn", res, hg.GetForwardPipelineInfo())
+		player_node, _  = hg.CreateInstanceFromAssets(scene, hg.TransformationMat4(hg.Vec3(players[players_spawned][0], players[players_spawned][1], players[players_spawned][2]), hg.Vec3(players[players_spawned][3], players[players_spawned][4], players[players_spawned][5])), "objects_library/players/yellow_robot.scn", res, hg.GetForwardPipelineInfo())
+		player_lerp_node, _  = hg.CreateInstanceFromAssets(scene, hg.TransformationMat4(hg.Vec3(players[players_spawned][0], players[players_spawned][1], players[players_spawned][2]), hg.Vec3(players[players_spawned][3], players[players_spawned][4], players[players_spawned][5])), "objects_library/players/ghost_uninterpolated_robot.scn", res, hg.GetForwardPipelineInfo())
+		player_pred_node, _  = hg.CreateInstanceFromAssets(scene, hg.TransformationMat4(hg.Vec3(players[players_spawned][0], players[players_spawned][1], players[players_spawned][2]), hg.Vec3(players[players_spawned][3], players[players_spawned][4], players[players_spawned][5])), "objects_library/players/ghost_predict_robot.scn", res, hg.GetForwardPipelineInfo())
 
 		players_instances.append([[player_node, player_lerp_node, player_pred_node], players_spawned])
 		players_spawned += 1
@@ -153,10 +152,10 @@ while not hg.ReadKeyboard().Key(hg.K_Escape) and hg.IsWindowOpen(win):
 				player_nolerp_transform = pinstance[0][1].GetTransform()
 				player_pred_transform = pinstance[0][2].GetTransform()
 				player_id = pinstance[1]
-				player_updated_pos = hg.Vec3(players[player_id][0], 0, players[player_id][1])
-				player_updated_rot = hg.Vec3(players[player_id][2], players[player_id][3], players[player_id][4])
-				player_old_pos = hg.Vec3(old_players[player_id][0], 0, old_players[player_id][1])
-				player_old_rot = hg.Vec3(old_players[player_id][2], old_players[player_id][3], old_players[player_id][4])
+				player_updated_pos = hg.Vec3(players[player_id][0], players[player_id][1], players[player_id][2])
+				player_updated_rot = hg.Vec3(players[player_id][3], players[player_id][4], players[player_id][5])
+				player_old_pos = hg.Vec3(old_players[player_id][0], old_players[player_id][1], old_players[player_id][2])
+				player_old_rot = hg.Vec3(old_players[player_id][3], old_players[player_id][4], old_players[player_id][5])
 				updated_time = players[-1]
 				time_delta = sum(time_deltas) / len(time_deltas)
 				time_end = updated_time + time_delta
@@ -170,17 +169,18 @@ while not hg.ReadKeyboard().Key(hg.K_Escape) and hg.IsWindowOpen(win):
 						old_players = players.copy()
 						next_players[-1] = time.time()
 						players = next_players.copy()
-						player_updated_pos = hg.Vec3(players[player_id][0], 0, players[player_id][1])
-						player_updated_rot = hg.Vec3(players[player_id][2], players[player_id][3], players[player_id][4])
+						player_updated_pos = hg.Vec3(players[player_id][0], players[player_id][1], players[player_id][2])
+						player_updated_rot = hg.Vec3(players[player_id][3], players[player_id][4], players[player_id][5])
 						current_pos = player_transform.GetPos()
 						current_rot = player_transform.GetRot()
 						old_players[player_id][0] = current_pos.x
-						old_players[player_id][1] = current_pos.z
-						old_players[player_id][2] = current_rot.x
-						old_players[player_id][3] = current_rot.y
-						old_players[player_id][4] = current_rot.z
-						player_old_pos = hg.Vec3(old_players[player_id][0], 0, old_players[player_id][1])
-						player_old_rot = hg.Vec3(old_players[player_id][2], old_players[player_id][3], old_players[player_id][4])
+						old_players[player_id][1] = current_pos.y
+						old_players[player_id][2] = current_pos.z
+						old_players[player_id][3] = current_rot.x
+						old_players[player_id][4] = current_rot.y
+						old_players[player_id][5] = current_rot.z
+						player_old_pos = hg.Vec3(old_players[player_id][0], old_players[player_id][1], old_players[player_id][2])
+						player_old_rot = hg.Vec3(old_players[player_id][3], old_players[player_id][4], old_players[player_id][5])
 						updated_time = players[-1]
 						old_time = old_players[-1]
 
@@ -210,8 +210,8 @@ while not hg.ReadKeyboard().Key(hg.K_Escape) and hg.IsWindowOpen(win):
 					player_pred_transform.SetPos(hg.Vec3(-100, -100, -100))
 
 				if show_real:
-					player_nolerp_transform.SetPos(hg.Vec3(players[player_id][0], 0, players[player_id][1]))
-					player_nolerp_transform.SetRot(hg.Vec3(players[player_id][2], players[player_id][3], players[player_id][4]))			
+					player_nolerp_transform.SetPos(hg.Vec3(players[player_id][0], players[player_id][1], players[player_id][2]))
+					player_nolerp_transform.SetRot(hg.Vec3(players[player_id][3], players[player_id][4], players[player_id][5]))
 				else:
 					player_nolerp_transform.SetPos(hg.Vec3(-100, -100, -100))
 
@@ -224,7 +224,7 @@ while not hg.ReadKeyboard().Key(hg.K_Escape) and hg.IsWindowOpen(win):
 	pos = trs.GetPos()
 	rot = trs.GetRot()
 
-	MESSAGE = [0, pos.x, pos.z, rot.x, rot.y, rot.z, send_id]
+	MESSAGE = [0, pos.x, pos.y, pos.z, rot.x, rot.y, rot.z, send_id]
 	world = hg.RotationMat3(rot.x, rot.y, rot.z)
 	front = hg.GetZ(world)
 
