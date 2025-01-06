@@ -3,6 +3,10 @@ import socket
 import threading
 import pickle
 import time
+import numpy as np
+import cv2
+import ctypes
+
 from utils import RangeAdjust
 from name_tag import DrawNameTag
 
@@ -123,6 +127,10 @@ auto_move = False
 vid_scene_opaque = 0
 vtx_2 = hg.Vertices(vtx_layout, 2)
 vtx_4 = hg.Vertices(vtx_layout, 4)
+picture_width, picture_height = 0, 0
+picture_data = None
+picture_format = hg.PF_RGB24
+
 
 cam = scene.GetNode("Camera")
 trs = scene.GetNode("red_player")
@@ -134,8 +142,13 @@ camera_world_transform = hg.TransformationMat4(hg.Vec3(2,1,0), hg.Vec3(0,0,0))
 camera_robot = hg.CreateCamera(scene, camera_world_transform, z_near, z_far, fov)
 camera_robot.GetTransform().SetParent(trs)
 
-frame_buffer = hg.CreateFrameBuffer(512, 512, hg.TF_RGBA32F, hg.TF_D24, 4, 'FrameBuffer')
+frame_buffer = hg.CreateFrameBuffer(512, 512, hg.TF_RGBA8, hg.TF_D24, 4, 'FrameBuffer')
 color = hg.GetColorTexture(frame_buffer)
+
+tex_color_ref = res.AddTexture("tex_rb", color)
+tex_readback = hg.CreateTexture(512, 512, "readback", hg.TF_ReadBack | hg.TF_BlitDestination, hg.TF_RGBA8)
+
+picture = hg.Picture(512, 512, hg.PF_RGBA32)
 
 while not hg.ReadKeyboard().Key(hg.K_Escape) and hg.IsWindowOpen(win): #and hg.IsWindowOpen(win_robot_view):
 	render_was_reset, res_x, res_y = hg.RenderResetToWindow(win, res_x, res_y, hg.RF_VSync)
@@ -287,11 +300,40 @@ while not hg.ReadKeyboard().Key(hg.K_Escape) and hg.IsWindowOpen(win): #and hg.I
 		imgui_robot_view = hg.ImGuiImage(color, hg.Vec2(512, 512))
 	hg.ImGuiEnd()
 
-	hg.ImGuiEndFrame(255)
 
+	if (hg.ReadKeyboard().Key(hg.K_Space) and state == "none"):
+		state = "capture"
+		frame_count_capture, vid = hg.CaptureTexture(vid, res, tex_color_ref, tex_readback, picture)
+
+	elif (state == "capture" and frame_count_capture <= frame):
+		picture_width, picture_height = picture.GetWidth(), picture.GetHeight()
+		picture_data = picture.GetData()
+		print(picture_data)
+		picture_format = picture.GetFormat()
+
+		if picture_format != 2:
+			raise ValueError("Unsupported picture format. Only PF_RGBA32 is supported.")
+
+		bytes_per_pixels = 4
+		data_size = picture_width * picture_height * bytes_per_pixels
+
+		buffer = (ctypes.c_char * data_size).from_address(picture_data)
+		raw_data = bytes(buffer)
+
+		np_array = np.frombuffer(raw_data, dtype=np.uint8)
+		image_rgba = np_array.reshape((picture_height, picture_width, bytes_per_pixels))
+
+		image_bgr = cv2.cvtColor(image_rgba, cv2.COLOR_BGR2RGB)
+
+		cv2.imshow("Image", image_bgr)
+		state = "none"
+
+	hg.ImGuiEndFrame(255)
 	frame = hg.Frame()
 
 	hg.UpdateWindow(win)
 
+cv2.waitKey(0)
+cv2.destroyAllWindows()
 hg.RenderShutdown()
 hg.DestroyWindow(win)
