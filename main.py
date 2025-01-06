@@ -72,7 +72,12 @@ hg.InputInit()
 hg.WindowSystemInit()
 
 res_x, res_y = 1280, 720
-win = hg.RenderInit('3D Server - Client Scene', res_x, res_y, hg.RF_VSync | hg.RF_MSAA4X)
+
+win = hg.NewWindow('3D Server - Client Scene', res_x, res_y)
+hg.RenderInit(win)
+
+# win_view_robot = hg.NewWindow('Robot View', res_x, res_y)
+# hg.RenderInit(win_view_robot)
 
 pipeline = hg.CreateForwardPipeline()
 res = hg.PipelineResources()
@@ -110,6 +115,7 @@ mouse = hg.Mouse()
 
 # main loop
 frame = 0
+state = "none"
 show_lerp = True
 show_pred = True
 show_real = True
@@ -118,10 +124,27 @@ vid_scene_opaque = 0
 vtx_2 = hg.Vertices(vtx_layout, 2)
 vtx_4 = hg.Vertices(vtx_layout, 4)
 
-while not hg.ReadKeyboard().Key(hg.K_Escape) and hg.IsWindowOpen(win):
+cam = scene.GetNode("Camera")
+trs = scene.GetNode("red_player")
+z_near = cam.GetCamera().GetZNear()
+z_far = cam.GetCamera().GetZFar()
+fov = cam.GetCamera().GetFov()
+
+camera_world_transform = hg.TransformationMat4(hg.Vec3(2,1,0), hg.Vec3(0,0,0))
+camera_robot = hg.CreateCamera(scene, camera_world_transform, z_near, z_far, fov)
+camera_robot.GetTransform().SetParent(trs)
+
+frame_buffer = hg.CreateFrameBuffer(512, 512, hg.TF_RGBA32F, hg.TF_D24, 4, 'FrameBuffer')
+color = hg.GetColorTexture(frame_buffer)
+
+while not hg.ReadKeyboard().Key(hg.K_Escape) and hg.IsWindowOpen(win): #and hg.IsWindowOpen(win_robot_view):
+	render_was_reset, res_x, res_y = hg.RenderResetToWindow(win, res_x, res_y, hg.RF_VSync)
 	keyboard.Update()
 	mouse.Update()
 	dt = hg.TickClock()
+
+	vid = 0
+	pass_ids = 0
 
 	min_node_pos = scene.GetNode('area_min').GetTransform().GetPos()
 	max_node_pos = scene.GetNode('area_max').GetTransform().GetPos()
@@ -236,7 +259,12 @@ while not hg.ReadKeyboard().Key(hg.K_Escape) and hg.IsWindowOpen(win):
 		trs.SetRot(hg.Vec3(rot.x, rot.y - (hg.time_to_sec_f(dt)), rot.z))
 
 	scene.Update(dt)
-	vid, pass_ids = hg.SubmitSceneToPipeline(0, scene, hg.IntRect(0, 0, res_x, res_y), True, pipeline, res, pipeline_aaa, pipeline_aaa_config, frame)
+
+	scene.SetCurrentCamera(cam)
+	vid, pass_ids = hg.SubmitSceneToPipeline(vid, scene, hg.IntRect(0, 0, res_x, res_y), True, pipeline, res, pipeline_aaa, pipeline_aaa_config, frame)
+	scene.SetCurrentCamera(camera_robot)
+	vid, pass_ids = hg.SubmitSceneToPipeline(vid, scene, hg.IntRect(0, 0, res_x, res_y), True, pipeline, res, frame_buffer.handle)
+
 
 	vid_scene_opaque = hg.GetSceneForwardPipelinePassViewId(pass_ids, hg.SFPP_Opaque)
 
@@ -255,9 +283,14 @@ while not hg.ReadKeyboard().Key(hg.K_Escape) and hg.IsWindowOpen(win):
 
 	hg.ImGuiEnd()
 
+	if hg.ImGuiBegin("Render Robot View"):
+		imgui_robot_view = hg.ImGuiImage(color, hg.Vec2(512, 512))
+	hg.ImGuiEnd()
+
 	hg.ImGuiEndFrame(255)
 
 	frame = hg.Frame()
+
 	hg.UpdateWindow(win)
 
 hg.RenderShutdown()
