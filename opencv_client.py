@@ -29,22 +29,34 @@ def GetOpenCvImageFromPicture(picture):
 
 	return image_bgr
 
-def ProcessInputs(input_value, pos, rot, front, dt, trs):
-    match input_value:
-        case "UP":
-            trs.SetPos(pos + front * (hg.time_to_sec_f(dt) * 10))
-            return
-        case "DOWN":
-            trs.SetPos(pos - front * (hg.time_to_sec_f(dt) * 10))
-            return
-        case "RIGHT":
-            trs.SetRot(hg.Vec3(rot.x, rot.y + (hg.time_to_sec_f(dt)) * 10, rot.z))
-            return
-        case "LEFT":
-            trs.SetRot(hg.Vec3(rot.x, rot.y - (hg.time_to_sec_f(dt)) * 10, rot.z))
-            return
-        case _:
-            return "Must be a valid input"
+def ProcessRobotMovements(input_value, pos, rot, front, dt, trs, scene):
+	min_node_pos = scene.GetNode('area_min').GetTransform().GetPos()
+	max_node_pos = scene.GetNode('area_max').GetTransform().GetPos()
+	min_x = min_node_pos.x
+	min_z = min_node_pos.z
+	max_x = max_node_pos.x
+	max_z = max_node_pos.z
+
+	simulated_pos_forward = pos + front * (hg.time_to_sec_f(dt) * 10)
+	simulated_pos_backward = pos - front * (hg.time_to_sec_f(dt) * 10)
+
+	match input_value:
+		case "UP":
+			if  simulated_pos_forward.x < max_x and simulated_pos_forward.x > min_x and simulated_pos_forward.z < max_z and simulated_pos_forward.z > min_z:
+				trs.SetPos(pos + front * (hg.time_to_sec_f(dt) * 10))
+			return
+		case "DOWN":
+			if simulated_pos_backward.x < max_x and simulated_pos_backward.x > min_x and simulated_pos_backward.z < max_z and simulated_pos_backward.z > min_z:
+				trs.SetPos(pos - front * (hg.time_to_sec_f(dt) * 10))
+			return
+		case "RIGHT":
+			trs.SetRot(hg.Vec3(rot.x, rot.y + (hg.time_to_sec_f(dt)) * 10, rot.z))
+			return
+		case "LEFT":
+			trs.SetRot(hg.Vec3(rot.x, rot.y - (hg.time_to_sec_f(dt)) * 10, rot.z))
+			return
+		case _:
+			return "Must be a valid input"
 
 def DetectQrCode(image):
     qrCodeDetector = cv2.QRCodeDetector()
@@ -67,7 +79,7 @@ def DetectQrCode(image):
         return "Lost", None
     return "Lost", None
 
-def GoTo(player_position, rot, front, image, trs, dt, lost_timer):
+def GoTo(player_position, rot, front, image, trs, dt, lost_timer, scene):
 	player_state, qr_code_datas = DetectQrCode(image)
 
 	if player_state == "Lost":
@@ -77,14 +89,14 @@ def GoTo(player_position, rot, front, image, trs, dt, lost_timer):
 		elapsed_time = time.time() - lost_timer
 
 		if elapsed_time < 10:
-			ProcessInputs("RIGHT", player_position, rot, front, dt, trs)
+			ProcessRobotMovements("RIGHT", player_position, rot, front, dt, trs, scene)
 		elif 10 <= elapsed_time < 15:
-			ProcessInputs("UP", player_position, rot, front, dt, trs)
+			ProcessRobotMovements("UP", player_position, rot, front, dt, trs, scene)
 		else:
 			lost_timer = 0
 
 	if player_state == "Moving":
-		ProcessInputs("UP", player_position, rot, front, dt, trs)
+		ProcessRobotMovements("UP", player_position, rot, front, dt, trs, scene)
 		lost_timer = 0
 
 	return lost_timer
@@ -147,13 +159,6 @@ def main():
 
 		vid = 0
 
-		min_node_pos = scene.GetNode('area_min').GetTransform().GetPos()
-		max_node_pos = scene.GetNode('area_max').GetTransform().GetPos()
-		min_x = min_node_pos.x
-		min_z = min_node_pos.z
-		max_x = max_node_pos.x
-		max_z = max_node_pos.z
-
 		trs = scene.GetNode('red_player').GetTransform()
 		pos = trs.GetPos()
 		rot = trs.GetRot()
@@ -163,11 +168,9 @@ def main():
 
 		active_inputs = []
 
-		simulated_pos_forward = pos + front * (hg.time_to_sec_f(dt) * 10)
-		simulated_pos_backward = pos - front * (hg.time_to_sec_f(dt) * 10)
-		if (keyboard.Down(hg.K_Up)) and simulated_pos_forward.x < max_x and simulated_pos_forward.x > min_x and simulated_pos_forward.z < max_z and simulated_pos_forward.z > min_z:
+		if (keyboard.Down(hg.K_Up)):
 			active_inputs.append("UP")
-		if keyboard.Down(hg.K_Down) and simulated_pos_backward.x < max_x and simulated_pos_backward.x > min_x and simulated_pos_backward.z < max_z and simulated_pos_backward.z > min_z:
+		if keyboard.Down(hg.K_Down):
 			active_inputs.append("DOWN")
 		if keyboard.Down(hg.K_Right):
 			active_inputs.append("RIGHT")
@@ -175,7 +178,7 @@ def main():
 			active_inputs.append("LEFT")
 
 		for input_value in active_inputs:
-			ProcessInputs(input_value, pos, rot, front, dt, trs)
+			ProcessRobotMovements(input_value, pos, rot, front, dt, trs, scene)
 
 		scene.Update(dt)
 
@@ -216,7 +219,7 @@ def main():
 			elif state == "capture" and frame_count_capture <= frame:
 				image = GetOpenCvImageFromPicture(picture)
 				if image is not None:
-					lost_timer = GoTo(pos, rot, front, image, trs, dt, lost_timer)
+					lost_timer = GoTo(pos, rot, front, image, trs, dt, lost_timer, scene)
 					state = "none"
 
 		hg.ImGuiEndFrame(255)
