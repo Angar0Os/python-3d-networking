@@ -27,14 +27,14 @@
 		"fog_far": 0.0,
 		"fog_near": 0.0,
 		"probe": {
-			"irradiance_map": "probes/blue_sky.hdr.irradiance",
+			"irradiance_map": "core/pbr/probe.hdr.irradiance",
 			"parallax": 0.0,
 			"pos": [
 				0.0,
 				0.0,
 				0.0
 			],
-			"radiance_map": "probes/blue_sky.hdr.radiance",
+			"radiance_map": "core/pbr/probe.hdr.radiance",
 			"rot": [
 				0.0,
 				0.0,

@@ -1,1 +1,1 @@
-python main.py
+python network_client.py
