@@ -104,7 +104,7 @@ def main():
 	pipeline = hg.CreateForwardPipeline()
 	res = hg.PipelineResources()
 
-	hg.AddAssetsFolder("server_client_demo_compiled")
+	hg.AddAssetsFolder("assets_compiled")
 	hg.ImGuiInit(10, hg.LoadProgramFromAssets('core/shader/imgui'), hg.LoadProgramFromAssets('core/shader/imgui_image'))
 
 	vtx_layout = hg.VertexLayout()

@@ -90,7 +90,7 @@ win = hg.RenderInit('3D Server - Client Scene', res_x, res_y, hg.RF_VSync | hg.R
 pipeline = hg.CreateForwardPipeline()
 res = hg.PipelineResources()
 
-hg.AddAssetsFolder("server_client_demo_compiled")
+hg.AddAssetsFolder("assets_compiled")
 hg.ImGuiInit(10, hg.LoadProgramFromAssets('core/shader/imgui'), hg.LoadProgramFromAssets('core/shader/imgui_image'))
 line_shader = hg.LoadProgramFromAssets('core/shader/white')
 name_shader = hg.LoadProgramFromAssets('core/shader/grey')
