@@ -1,0 +1,1 @@
+assetc C:\works\python-3d-networking\server_client_demo C:\works\python-3d-networking\server_client_demo_compiled
