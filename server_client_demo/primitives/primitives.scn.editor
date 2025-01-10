@@ -8,27 +8,13 @@
 		},
 		"explorer": {
 			"node_custom_order": {
-				"refs": [
-					{
-						"children": [
-							2
-						],
-						"ref": 11
-					}
-				],
+				"refs": null,
 				"roots": [
 					0,
-					4,
-					5,
-					6,
-					7,
-					8,
-					9,
-					10,
-					3,
-					11,
 					1,
-					128
+					2,
+					3,
+					4
 				]
 			},
 			"node_sort_method": "custom",
@@ -45,12 +31,12 @@
 			"subdiv_size": 1.0
 		},
 		"navigation_plugin": {
-			"orbit_distance": 10.453763961791992,
+			"orbit_distance": 10.0,
 			"speed": 0.10000000149011612,
 			"turbo": 1.0
 		},
 		"transform_gizmo_plugin": {
-			"mode": "global",
+			"mode": "local",
 			"snap": "none",
 			"snap_rotation": 5.0,
 			"snap_rotation_fine": 1.0,
@@ -62,7 +48,7 @@
 		},
 		"view_plugin": {
 			"show_cameras": true,
-			"show_collisions": true,
+			"show_collisions": false,
 			"show_lights": true,
 			"show_nodes": true,
 			"show_probe": true
@@ -135,18 +121,18 @@
 			},
 			"orthographic_size": 1.0,
 			"perspective": [
-				0.9788311123847961,
-				0.1488540917634964,
-				0.14051738381385803,
-				-0.980255126953125,
+				0.9457464814186096,
+				0.09110210090875626,
+				0.31187206506729126,
+				-2.180000066757202,
 				0.0,
-				0.6864542961120605,
-				-0.7271917462348938,
-				6.615495204925537,
-				-0.20469601452350616,
-				0.7117986679077148,
-				0.671926736831665,
-				-2.7076075077056885
+				0.9598848223686218,
+				-0.2803954482078552,
+				1.159999966621399,
+				-0.3249058723449707,
+				0.2651829421520233,
+				0.9078075885772705,
+				-3.200000047683716
 			],
 			"perspective_fov": 0.7853981852531433,
 			"perspective_zrange": {
