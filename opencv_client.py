@@ -52,7 +52,7 @@ def DetectQrCode(image):
 
     if points is not None:
         points = points[0]
-        print(f"QR Code détecté : {decodedText}")
+        print(f"QR Code detected : {decodedText}")
 
         points_int = points.astype(int)
         for i in range(len(points_int)):
