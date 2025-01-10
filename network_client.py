@@ -68,15 +68,12 @@ def ProcessInputs(input_value, pos, rot, front, dt, trs):
 	match input_value:
 		case "UP":
 			trs.SetPos(pos + front * (hg.time_to_sec_f(dt) * 10))
-			return
 		case "DOWN":
 			trs.SetPos(pos - front * (hg.time_to_sec_f(dt) * 10))
-			return
 		case "RIGHT":
-			trs.SetRot(hg.Vec3(rot.x, rot.y + (hg.time_to_sec_f(dt)) * 10, rot.z))
-			return
+			trs.SetRot(hg.Vec3(rot.x, rot.y + (hg.time_to_sec_f(dt)), rot.z))
 		case "LEFT":
-			trs.SetRot(hg.Vec3(rot.x, rot.y - (hg.time_to_sec_f(dt)) * 10, rot.z))
+			trs.SetRot(hg.Vec3(rot.x, rot.y - (hg.time_to_sec_f(dt)), rot.z))
 		case _:
 			return "Must be a valid input"
 
@@ -240,20 +237,23 @@ while not hg.ReadKeyboard().Key(hg.K_Escape) and hg.IsWindowOpen(win):
 	world = hg.RotationMat3(rot.x, rot.y, rot.z)
 	front = hg.GetZ(world)
 
+	active_inputs = []
+
 	simulated_pos_forward = pos + front * (hg.time_to_sec_f(dt) * 10)
 	simulated_pos_backward = pos - front * (hg.time_to_sec_f(dt) * 10)
 	if (keyboard.Down(
 			hg.K_Up) or auto_move) and simulated_pos_forward.x < max_x and simulated_pos_forward.x > min_x and simulated_pos_forward.z < max_z and simulated_pos_forward.z > min_z:
-		ProcessInputs("UP", pos, rot, front, dt, trs)
-	elif keyboard.Down(
+		active_inputs.append("UP")
+	if keyboard.Down(
 			hg.K_Down) and simulated_pos_backward.x < max_x and simulated_pos_backward.x > min_x and simulated_pos_backward.z < max_z and simulated_pos_backward.z > min_z:
-		ProcessInputs("DOWN", pos, rot, front, dt, trs)
-	elif keyboard.Down(hg.K_Right) or auto_move:
-		ProcessInputs("RIGHT", pos, rot, front, dt, trs)
-	elif keyboard.Down(hg.K_Left):
-		ProcessInputs("LEFT", pos, rot, front, dt, trs)
-	else:
-		ProcessInputs("", pos, rot, front, dt, trs)
+		active_inputs.append("DOWN")
+	if keyboard.Down(hg.K_Right) or auto_move:
+		active_inputs.append("RIGHT")
+	if keyboard.Down(hg.K_Left):
+		active_inputs.append("LEFT")
+
+	for input_value in active_inputs:
+		ProcessInputs(input_value, pos, rot, front, dt, trs)
 
 	scene.Update(dt)
 	vid, pass_ids = hg.SubmitSceneToPipeline(0, scene, hg.IntRect(0, 0, res_x, res_y), True, pipeline, res, pipeline_aaa, pipeline_aaa_config, frame)
